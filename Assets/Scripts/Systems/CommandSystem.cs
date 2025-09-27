@@ -1,16 +1,26 @@
+using System.Collections.Generic;
 using UnityEngine;
-
-public class CommandSystem : MonoBehaviour
+//Undo/Redo
+public interface ICommand
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    void Execute();
+    void Undo();
+}
+public class CommandSystem
+{
+    //Sử dụng Stack để lưu trữ lịch sử các lệnh đã thực hiện
+    private Stack<ICommand> commandHistory = new();
+    public void ExecuteCommand(ICommand command)
     {
-        
+        command.Execute();
+        commandHistory.Push(command);
     }
-
-    // Update is called once per frame
-    void Update()
+    public void Undo()
     {
-        
+        if (commandHistory.Count > 0)
+        {
+            ICommand lastCommand = commandHistory.Pop();
+            lastCommand.Undo();
+        }
     }
 }

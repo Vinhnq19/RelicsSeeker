@@ -1,16 +1,14 @@
 using UnityEngine;
 
-public class EntityBase : MonoBehaviour
+public abstract class EntityBase : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public Vector2Int gridPosition;
+
+    public virtual void Init(Vector2Int startPos)
     {
-        
+        gridPosition = startPos;
+        transform.position = new Vector3(startPos.x, startPos.y, 0);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public abstract void OnInteract(EntityBase other);
 }
