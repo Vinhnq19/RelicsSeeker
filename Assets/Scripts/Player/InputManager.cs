@@ -3,64 +3,97 @@ using UnityEngine.InputSystem;
 
 public class InputManager : MonoBehaviour
 {
+    private PlayerInputSet inputActions;
+
     [Header("References")]
     [SerializeField] private Player player;
-    
+
     [Header("Input Settings")]
     [SerializeField] private bool inputEnabled = true;
+
+    [Header("Debug")]
+    private bool debugInput = true;
+
+    private void Awake()
+    {
+        // Tạo input actions
+        inputActions = new PlayerInputSet();
+
+        // Bind input actions
+        inputActions.Player.Movement.performed += OnMovementInput;
+        inputActions.Player.Undo.performed += OnUndoInput;
+        inputActions.Player.Pause.performed += OnPauseInput;
+        inputActions.Player.Restart.performed += OnRestartInput;
+    }
+
+    private void OnEnable()
+    {
+        inputActions?.Enable();
+    }
+
+    private void OnDisable()
+    {
+        inputActions?.Disable();
+    }
 
     private void Start()
     {
         // Tự động tìm Player nếu chưa được gán
         if (player == null)
             player = FindFirstObjectByType<Player>();
-        
+
         if (player == null)
             Debug.LogError("InputManager: Không tìm thấy Player component!");
     }
 
-    #region Input Action Callbacks
-    // Input System sẽ gọi các method này (setup trong PlayerInput component)
-    
-    public void OnMovement(InputAction.CallbackContext context)
+    private void OnDestroy()
     {
-        if (!inputEnabled || !context.performed) return;
-        
-        if (player != null && player.CanMove())
+        // Cleanup input actions
+        if (inputActions != null)
         {
-            Vector2 input = context.ReadValue<Vector2>();
-            
-            // Chuyển đổi input thành hướng grid
-            Vector2Int direction = GetGridDirection(input);
-            player.HandleMovement(direction);
+            inputActions.Player.Movement.performed -= OnMovementInput;
+            inputActions.Player.Undo.performed -= OnUndoInput;
+            inputActions.Player.Pause.performed -= OnPauseInput;
+            inputActions.Player.Restart.performed -= OnRestartInput;
         }
     }
 
-    public void OnUndo(InputAction.CallbackContext context)
+    #region Input Action Handlers
+    private void OnMovementInput(InputAction.CallbackContext context)
     {
-        if (!inputEnabled || !context.performed) return;
-        
-        Debug.Log("InputManager: Undo action performed");
-        // Có thể delegate tới GameManager hoặc Player tùy logic game
-        if (player != null)
-            player.HandleUndo();
+        if (!inputEnabled) return;
+
+        Vector2 input = context.ReadValue<Vector2>();
+
+        if (player != null && player.CanMove())
+        {
+            Vector2Int direction = GetGridDirection(input);
+            player.HandleMovement(direction);
+        }
+        else if (debugInput)
+        {
+            if (player == null) Debug.Log("InputManager: Player is null!");
+            else Debug.Log("InputManager: Player cannot move right now");
+        }
     }
 
-    public void OnPause(InputAction.CallbackContext context)
+    private void OnUndoInput(InputAction.CallbackContext context)
     {
-        if (!inputEnabled || !context.performed) return;
-        
-        Debug.Log("InputManager: Pause action performed");
-        // Delegate tới GameManager hoặc UI Manager
+        if (!inputEnabled) return;
+
+        HandleUndo();
+    }
+
+    private void OnPauseInput(InputAction.CallbackContext context)
+    {
+        if (!inputEnabled) return;
+
         HandlePause();
     }
 
-    public void OnRestart(InputAction.CallbackContext context)
+    private void OnRestartInput(InputAction.CallbackContext context)
     {
-        if (!inputEnabled || !context.performed) return;
-        
-        Debug.Log("InputManager: Restart action performed");
-        // Delegate tới GameManager
+        if (!inputEnabled) return;
         HandleRestart();
     }
     #endregion
@@ -77,21 +110,32 @@ public class InputManager : MonoBehaviour
 
     private void HandlePause()
     {
-        // TODO: Implement pause logic
-        // Có thể gọi GameManager.Instance.TogglePause();
-        Time.timeScale = Time.timeScale == 0 ? 1 : 0;
+        if (GameManager.Instance != null)
+        {
+            if (GameManager.Instance.isGamePaused)
+                GameManager.Instance.ResumeGame();
+            else
+                GameManager.Instance.PauseGame();
+        }
     }
+
 
     private void HandleRestart()
     {
-        // TODO: Implement restart logic
-        // Có thể gọi GameManager.Instance.RestartLevel();
-        if (player != null)
-            player.HandleRestart();
+        if (GameManager.Instance != null)
+            GameManager.Instance.RestartLevel();
     }
+
+    private void HandleUndo()
+    {
+        Debug.Log("InputManager: Handling undo action");
+        if (GameManager.Instance != null)
+            EventBus.Publish(GameEvent.UndoAction);
+    }
+
     #endregion
 
-    #region Public Methods
+        #region Public Methods
     public void SetInputEnabled(bool enabled)
     {
         inputEnabled = enabled;
@@ -106,5 +150,6 @@ public class InputManager : MonoBehaviour
     {
         player = newPlayer;
     }
+
     #endregion
 }

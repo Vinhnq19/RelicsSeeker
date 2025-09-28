@@ -41,4 +41,8 @@ public class GameManager : MonoBehaviour
         isGamePaused = false;
         EventBus.Publish(GameEvent.GameResumed);
     }
+    public void UndoAction()
+    {
+        EventBus.Publish(GameEvent.UndoAction);
+    }
 }
