@@ -36,10 +36,6 @@ public class Player : EntityBase
                 Init(currentPos);
             }
         }
-        else
-        {
-            if (debugMovement) Debug.Log($"Player: Already initialized at {gridPosition}");
-        }
 
         // Đảm bảo transform position khớp với grid position
         transform.position = new Vector3(gridPosition.x, gridPosition.y, 0);
@@ -55,7 +51,8 @@ public class Player : EntityBase
 
     public void HandleMovement(Vector2Int direction)
     {
-        if (!CanMove()) return;        TryMove(direction);
+        if (!CanMove()) return;
+        TryMove(direction);
     }
 
     #endregion
@@ -68,7 +65,7 @@ public class Player : EntityBase
         {
             return;
         }
-        
+
         Vector2Int targetGridPos = gridPosition + dir;
 
         //Kiểm tra xem có vật cản không
@@ -77,52 +74,54 @@ public class Player : EntityBase
         if (targetEntity != null)
         {
 
-        if (targetEntity is ObstacleBase obstacleBase && obstacleBase.CanBePushed())
-        {
-            Vector2Int pushToPos = targetGridPos + dir; // Vị trí obstacle sẽ được đẩy tới
-            
-            // Kiểm tra vị trí đẩy có trống không
-            if (IsPositionFree(pushToPos))
+            if (targetEntity is ObstacleBase obstacleBase && obstacleBase.CanBePushed())
             {
-                // Phát push event
-                PushEventData pushData = new PushEventData(dir, targetGridPos, pushToPos, this, obstacleBase);
-                EventBus.PublishPush(GameEvent.PlayerPush, pushData);
-                StartCoroutine(MoveToWithDelay(targetGridPos, obstacleBase.GetPushDuration()));
+                Vector2Int pushToPos = targetGridPos + dir; // Vị trí obstacle sẽ được đẩy tới
+
+                // Kiểm tra vị trí đẩy có trống không
+                if (IsPositionFree(pushToPos))
+                {
+                    // Phát push event
+                    PushEventData pushData = new PushEventData(dir, targetGridPos, pushToPos, this, obstacleBase);
+                    EventBus.PublishPush(GameEvent.PlayerPush, pushData);
+                    StartCoroutine(MoveToWithDelay(targetGridPos, obstacleBase.GetPushDuration()));
+                }
+            }
+            if (targetEntity is VictoryItem victoryItem)
+            {
+                StartCoroutine(MoveTo(targetGridPos));
+                victoryItem.OnInteract(this);
+                return;
             }
         }
         else
         {
-            if (debugMovement) Debug.Log("Player: Path blocked by " + targetEntity.name);
+            // Vị trí trống, di chuyển bình thường
+            StartCoroutine(MoveTo(targetGridPos));
         }
     }
-    else
-    {
-        // Vị trí trống, di chuyển bình thường
-        StartCoroutine(MoveTo(targetGridPos));
-    }
-    }
 
-private EntityBase GetEntityAtPosition(Vector2Int pos)
-{
-    // Tìm entity tại vị trí chỉ định
-    EntityBase[] entities = FindObjectsByType<EntityBase>(FindObjectsSortMode.None);
-    
-    foreach (var entity in entities)
+    private EntityBase GetEntityAtPosition(Vector2Int pos)
     {
-        if (entity.gridPosition == pos && entity != this)
+        // Tìm entity tại vị trí chỉ định
+        EntityBase[] entities = FindObjectsByType<EntityBase>(FindObjectsSortMode.None);
+
+        foreach (var entity in entities)
         {
-        return entity;
+            if (entity.gridPosition == pos && entity != this)
+            {
+                return entity;
+            }
         }
-    }
-    
-    if (debugMovement) Debug.Log($"Player: No entity found at position {pos}");
-    return null;
-}
 
-private bool IsPositionFree(Vector2Int pos)
-{
-    return GetEntityAtPosition(pos) == null;
-}
+        if (debugMovement) Debug.Log($"Player: No entity found at position {pos}");
+        return null;
+    }
+
+    private bool IsPositionFree(Vector2Int pos)
+    {
+        return GetEntityAtPosition(pos) == null;
+    }
 
 
     private System.Collections.IEnumerator MoveTo(Vector2Int targetPos) //Move to target grid position
@@ -144,22 +143,22 @@ private bool IsPositionFree(Vector2Int pos)
 
         isMoving = false;
     }
-    
+
     // Movement với delay cho push synchronization
     private System.Collections.IEnumerator MoveToWithDelay(Vector2Int targetPos, float pushDuration)
     {
         isMoving = true;
-        
+
         // Chờ một chút để obstacle bắt đầu di chuyển trước
         yield return new WaitForSeconds(pushDuration * 0.1f);
-                
+
         Vector3 start = transform.position;
         Vector3 end = new Vector3(targetPos.x, targetPos.y, 0);
         float elapsed = 0;
-        
+
         // Sync movement duration với push duration (nhưng không quá chậm)
         float actualMoveDuration = Mathf.Max(moveDuration, pushDuration * 0.8f);
-        
+
         while (elapsed < actualMoveDuration)
         {
             transform.position = Vector3.Lerp(start, end, elapsed / actualMoveDuration);
@@ -169,8 +168,8 @@ private bool IsPositionFree(Vector2Int pos)
 
         transform.position = end;
         gridPosition = targetPos;
-        
-        
+
+
         isMoving = false;
     }
     #endregion

@@ -1,0 +1,6 @@
+// Level 1 - More complex layout
+P . . O .
+. O . . .
+O . . O .
+. . O . .
+. . . . V

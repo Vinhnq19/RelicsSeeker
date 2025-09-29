@@ -110,27 +110,18 @@ public class InputManager : MonoBehaviour
 
     private void HandlePause()
     {
-        if (GameManager.Instance != null)
-        {
-            if (GameManager.Instance.isGamePaused)
-                GameManager.Instance.ResumeGame();
-            else
-                GameManager.Instance.PauseGame();
-        }
+        EventBus.Publish(GameEvent.PauseToggle);
     }
-
 
     private void HandleRestart()
     {
-        if (GameManager.Instance != null)
-            GameManager.Instance.RestartLevel();
+        EventBus.Publish(GameEvent.RestartLevel);
     }
 
     private void HandleUndo()
     {
         Debug.Log("InputManager: Handling undo action");
-        if (GameManager.Instance != null)
-            EventBus.Publish(GameEvent.UndoAction);
+        EventBus.Publish(GameEvent.UndoAction);
     }
 
     #endregion

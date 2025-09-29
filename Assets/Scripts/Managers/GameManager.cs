@@ -4,7 +4,6 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
-    public int currentLevel = 0;
     public bool isGamePaused = false;
 
     private void Awake()
@@ -22,14 +21,27 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        EventBus.Subscribe(GameEvent.PauseToggle, OnPauseToggleRequested);
+    }
+
+    private void OnDisable()
+    {
+        EventBus.Unsubcribe(GameEvent.PauseToggle, OnPauseToggleRequested);
+    }
+
+    private void OnPauseToggleRequested()
+    {
+        if (isGamePaused)
+            ResumeGame();
+        else
+            PauseGame();
+    }
+
     public void RestartLevel()
     {
         EventBus.Publish(GameEvent.RestartLevel);
-    }
-    public void LoadNextLevel()
-    {
-        currentLevel++;
-        EventBus.Publish(GameEvent.LoadNextLevel);
     }
     public void PauseGame()
     {

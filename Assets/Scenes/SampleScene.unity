@@ -250,7 +250,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -10}
+  m_LocalPosition: {x: 3.45, y: -3.13, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -334,7 +334,7 @@ Transform:
   m_GameObject: {fileID: 619394800}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 3.45, y: -3.13, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -417,9 +417,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18a2b1b5d6a727e40b2340152dc5ad2f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  levelFiles:
+  - {fileID: 4900000, guid: 3ecec05f25454af4b91ffa3c65d9d539, type: 3}
+  - {fileID: 4900000, guid: 9146ef48fb0a229468a29b117e6f4596, type: 3}
   playerPrefab: {fileID: 8074078526970165914, guid: 13abc94c66fe34f4bb9ec23707e17eb7, type: 3}
-  rockPrefab: {fileID: 1480731220389266268, guid: d513592b37be8a34aabb070ef704e5cc, type: 3}
+  obstaclePrefab: {fileID: 1480731220389266268, guid: d513592b37be8a34aabb070ef704e5cc, type: 3}
   enemyPrefab: {fileID: 0}
+  victoryItemPrefab: {fileID: 802144572890456002, guid: 8a6294c485e589642a794aceba9147f6, type: 3}
+  chestPrefab: {fileID: 0}
+  debugLevel: 1
 --- !u!1 &1787007031
 GameObject:
   m_ObjectHideFlags: 0

@@ -67,7 +67,7 @@ public class ObstacleBase : EntityBase
         return canBePushed && !isBeingPushed;
     }
     
-    // ✅ THÊM METHOD: Expose push duration cho synchronization
+    //THÊM METHOD: Expose push duration cho synchronization
     public float GetPushDuration()
     {
         return pushDuration;

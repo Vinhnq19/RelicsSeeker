@@ -5,11 +5,12 @@ using UnityEngine;
 public enum GameEvent
 {
     RestartLevel,
-    LoadNextLevel,
+    LevelCompleted,
     UndoAction,
     PlayerDied,
     GamePaused,
     GameResumed,
+    PauseToggle,
     ItemCollected,
     PlayerMove,
     PlayerPush
