@@ -64,6 +64,10 @@ public class InputManager : MonoBehaviour
         if (!inputEnabled) return;
 
         Vector2 input = context.ReadValue<Vector2>();
+        if (player == null)
+        {
+            player = FindFirstObjectByType<Player>();
+        }
 
         if (player != null && player.CanMove())
         {
@@ -73,7 +77,6 @@ public class InputManager : MonoBehaviour
         else if (debugInput)
         {
             if (player == null) Debug.Log("InputManager: Player is null!");
-            else Debug.Log("InputManager: Player cannot move right now");
         }
     }
 

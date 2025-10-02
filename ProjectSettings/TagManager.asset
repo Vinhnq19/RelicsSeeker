@@ -3,12 +3,13 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - Obstacle
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - Rock
+  - Obstacle
   - Water
   - UI
   - Player
@@ -40,6 +41,15 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: 
+    uniqueID: 2057444913
+    locked: 0
+  - name: Obstacle
+    uniqueID: 3441495
+    locked: 0
+  - name: Player
+    uniqueID: 1659059953
     locked: 0
   m_RenderingLayers:
   - Default

@@ -13,6 +13,10 @@ public class LevelManager : MonoBehaviour
     public GameObject victoryItemPrefab;
     public GameObject chestPrefab;
 
+    [Header("Camera")]
+    [SerializeField] private bool autoSetupCamera = true;
+    [SerializeField] private float cameraPadding = 1.5f;
+    
     [Header("Debug")]
     [SerializeField] private bool debugLevel = true;
     
@@ -91,9 +95,7 @@ public class LevelManager : MonoBehaviour
             for(int x = 0; x < line.Length; x++)
             {
                 char c = line[x];
-                Vector2 position = new Vector2(x, -y); // -y để y tăng xuống dưới
-                
-                if (debugLevel) Debug.Log($"LevelManager: Parsing character '{c}' at position ({x}, {-y})");
+                Vector2 position = new Vector2(x, -y);
                 
                 switch(c)
                 {
@@ -127,6 +129,7 @@ public class LevelManager : MonoBehaviour
                 }
             }
         }
+        SetupCameraForLevel();
     }
     private void OnRestartLevel()
     {
@@ -154,13 +157,16 @@ public class LevelManager : MonoBehaviour
 
     private void ClearLevel()
     {
+        if (debugLevel) Debug.Log("LevelManager: Clearing current level...");
         
         EntityBase[] existingEntities = FindObjectsByType<EntityBase>(FindObjectsSortMode.None);
         foreach (var entity in existingEntities)
         {
-            if (debugLevel) Debug.Log($"LevelManager: Destroying {entity.name}");
+            if (debugLevel) Debug.Log($"LevelManager: Destroying {entity.name} ({entity.GetType().Name})");
             Destroy(entity.gameObject);
         }
+        
+        if (debugLevel) Debug.Log($"LevelManager: Cleared {existingEntities.Length} entities");
     }
 
     private void SpawnEntity(EntityType type, Vector2 position)
@@ -185,7 +191,19 @@ public class LevelManager : MonoBehaviour
                 Vector2Int gridPos = new Vector2Int(Mathf.RoundToInt(position.x), Mathf.RoundToInt(position.y));
                 entity.Init(gridPos);
                 
-                if (debugLevel) Debug.Log($"LevelManager: Spawned {type} at {gridPos}");
+                //if (debugLevel) Debug.Log($"LevelManager: Spawned {type} at {gridPos}");
+                if (type == EntityType.Player)
+                {
+                    InputManager inputManager = FindFirstObjectByType<InputManager>();
+                    if (inputManager != null)
+                    {
+                        inputManager.SetPlayer(entity as Player);
+                    }
+                    else
+                    {
+                        Debug.LogError("LevelManager: InputManager not found!");
+                    }
+                }
             }
             else
             {
@@ -196,6 +214,36 @@ public class LevelManager : MonoBehaviour
         {
             Debug.LogError($"LevelManager: No prefab assigned for {type}");
         }
+    }
+    
+    private void SetupCameraForLevel()
+    {
+        if (!autoSetupCamera) return;
+        
+        Camera mainCamera = Camera.main;
+        if (mainCamera == null)
+        {
+            mainCamera = FindFirstObjectByType<Camera>();
+        }
+        
+        if (mainCamera == null)
+        {
+            if (debugLevel) Debug.LogWarning("LevelManager: No camera found for auto setup!");
+            return;
+        }
+        
+        // Đợi một frame để đảm bảo tất cả entities đã được spawn
+        StartCoroutine(SetupCameraDelayed(mainCamera));
+    }
+    
+    private System.Collections.IEnumerator SetupCameraDelayed(Camera camera)
+    {
+        yield return new WaitForEndOfFrame();
+        
+        // Sử dụng utility để auto setup camera
+        CameraSetupUtility.AutoSetupCameraForCurrentLevel(camera, cameraPadding);
+        
+        if (debugLevel) Debug.Log("LevelManager: Camera auto-setup completed!");
     }
 }
 

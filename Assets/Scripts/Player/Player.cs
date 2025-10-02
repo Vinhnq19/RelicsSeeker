@@ -2,16 +2,23 @@ using UnityEngine;
 
 public class Player : EntityBase
 {
+    private SpriteRenderer sr;
     [Header("Player Settings")]
     [SerializeField] private float moveSpeed = 1f;
     [SerializeField] private float moveDuration = 0.1f; // Thời gian di chuyển giữa các ô
     [SerializeField] private Vector2Int startingPosition = new Vector2Int(0, 0); // Vị trí bắt đầu
 
+    
     [Header("Debug")]
     [SerializeField] private bool debugMovement = true;
 
     private bool isMoving = false;
+    private bool isFacingRight = false; // Hướng mặt hiện tại của Player
 
+    private void Awake()
+    {
+        sr = GetComponentInChildren<SpriteRenderer>();
+    }
     public override void Init(Vector2Int startPos)
     {
         base.Init(startPos);
@@ -52,6 +59,8 @@ public class Player : EntityBase
     public void HandleMovement(Vector2Int direction)
     {
         if (!CanMove()) return;
+        
+            HandleFlip(direction.x);
         TryMove(direction);
     }
 
@@ -60,7 +69,6 @@ public class Player : EntityBase
     #region Movement Methods
     private void TryMove(Vector2Int dir)
     {
-        // bảo game đã fully initialized
         if (Time.time < 0.1f) // Trong 0.1s đầu game
         {
             return;
@@ -113,8 +121,6 @@ public class Player : EntityBase
                 return entity;
             }
         }
-
-        if (debugMovement) Debug.Log($"Player: No entity found at position {pos}");
         return null;
     }
 
@@ -141,7 +147,9 @@ public class Player : EntityBase
         transform.position = end;
         gridPosition = targetPos;
 
+
         isMoving = false;
+
     }
 
     // Movement với delay cho push synchronization
@@ -174,9 +182,29 @@ public class Player : EntityBase
     }
     #endregion
 
+    #region Visual Methods
+    private void HandleFlip(float xDirection)
+    {
+        if (xDirection > 0 && !isFacingRight)
+        {
+            Flip();
+        }
+        else if (xDirection < 0 && isFacingRight)
+        {
+            Flip();
+        }
+    }
+    
+    public void Flip()
+    {
+        sr.flipX = !sr.flipX;
+        isFacingRight = !isFacingRight;
+    }
+    
     public override void OnInteract(EntityBase other)
     {
         // Handle interaction with other entities
         Debug.Log("Player interacted with " + other.name);
     }
+    #endregion
 }
